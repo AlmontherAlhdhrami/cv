@@ -48,11 +48,10 @@ function ResumeCardItem({ resume, refreshData }) {
     <div>
       <Link to={`/dashboard/resume/${resume.resumeid}/edit`}>
         <div
-          className="p-14 bg-gradient-to-b from-blue-200 via-blue-200 to-blue-200 h-[280px] rounded-t-lg border-t-4"
+          className="p-14 bg-gradient-to-b from-[#50bbe9] via-[#50bbe9] to-[#50bbe9] h-[280px] rounded-t-lg border-t-4"
           style={{ borderColor: resume?.themeColor || "#ccc" }}
         >
           <div className="flex items-center justify-center h-[180px]">
-            <h1>your cv  </h1>
             <h1>سيرتك الذاتية  </h1>
 
           </div>
