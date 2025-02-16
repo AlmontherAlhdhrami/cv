@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  base: "./", // Ensures assets load correctly in production
   plugins: [react()],
   resolve: {
     alias: {
@@ -10,10 +11,10 @@ export default defineConfig({
     },
   },
   server: {
-    host: "0.0.0.0", // Ensure the dev server is accessible
-    port: process.env.PORT || 3000, // Use Render's assigned port
+    host: "0.0.0.0",
+    port: process.env.PORT || 3000,
   },
   preview: {
-    allowedHosts: ["cv-8yst.onrender.com"], // Allow your Render domain
+    allowedHosts: ["cv-8yst.onrender.com"],
   },
 });
