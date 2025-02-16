@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PersonalDetail from './forms/PersonalDetail';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Home, LayoutGrid } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Home } from 'lucide-react';
 import Summery from './forms/Summery';
 import Experience from './forms/Experience';
 import Education from './forms/Education';
@@ -11,13 +11,13 @@ import ThemeColor from './ThemeColor';
 
 function FormSection() {
   const [activeFormIndex, setActiveFormIndex] = useState(1);
-  const [enableNext, setEnableNext] = useState(false); // default to false
-  const { resumeId } = useParams(); // Updated to camelCase
+  const [enableNext, setEnableNext] = useState(false);
+  const { resumeId } = useParams();
 
   // Handler to move to the next step
   const goNext = () => {
     setActiveFormIndex((prev) => prev + 1);
-    setEnableNext(false); 
+    setEnableNext(false);
   };
 
   // Handler to move to the previous step
@@ -27,21 +27,27 @@ function FormSection() {
 
   return (
     <div>
-      <div className='flex justify-between items-center mb-4'>
-        <div className='flex gap-5'>
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex gap-5">
           <Link to="/dashboard">
-            <Button><Home /></Button>
+            <Button className="bg-[#4c46bb] text-white hover:bg-[#3b3699]">
+              <Home />
+            </Button>
           </Link>
           <ThemeColor />
         </div>
-        <div className='flex gap-2'>
+        <div className="flex gap-2">
           {activeFormIndex > 1 && (
-            <Button size="sm" onClick={goPrev}>
+            <Button
+              className="bg-[#4c46bb] text-white hover:bg-[#3b3699]"
+              size="sm"
+              onClick={goPrev}
+            >
               <ArrowLeft />
             </Button>
           )}
           <Button
-            className="flex gap-2" 
+            className="flex gap-2 bg-[#4c46bb] text-white hover:bg-[#3b3699]"
             size="sm"
             onClick={goNext}
           >
@@ -52,11 +58,6 @@ function FormSection() {
 
       {/* Render the form step */}
       {activeFormIndex === 1 ? (
-        /* 
-          PersonalDetail has 'enabledNext={(v) => setEnableNext(v)}'
-          So once the user enters valid data or saves, 
-          it calls 'setEnableNext(true)' 
-        */
         <PersonalDetail enabledNext={setEnableNext} />
       ) : activeFormIndex === 2 ? (
         <Summery enabledNext={setEnableNext} />

@@ -13,7 +13,7 @@ function Experience() {
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
   const [loading, setLoading] = useState(false);
 
-  // We start with a single blank object or load from context if available
+  // Initialize experience list or load from context
   const [experienceList, setExperienceList] = useState([
     {
       title: "",
@@ -27,32 +27,22 @@ function Experience() {
     },
   ]);
 
-  // 1) On resumeInfo change, load resumeInfo.experience into local state BUT ONLY if different
+  // Load experience from context if available
   useEffect(() => {
-    const contextData = JSON.stringify(resumeInfo?.experience || []);
-    const localData = JSON.stringify(experienceList);
-
-    // Only set local state if they're truly different
-    if (contextData !== localData && resumeInfo?.experience) {
+    if (resumeInfo?.experience?.length > 0) {
       setExperienceList(resumeInfo.experience);
     }
-  }, [resumeInfo]); 
-  // ^ We compare. If they're the same, we do nothing, avoiding an infinite loop.
+  }, [resumeInfo]);
 
-  // 2) On local state change, update resumeInfo.experience BUT ONLY if different
+  // Update experience in context
   useEffect(() => {
-    const contextData = JSON.stringify(resumeInfo?.experience || []);
-    const localData = JSON.stringify(experienceList);
-
-    if (localData !== contextData) {
-      setResumeInfo((prev) => ({
-        ...prev,
-        experience: experienceList,
-      }));
-    }
+    setResumeInfo((prev) => ({
+      ...prev,
+      experience: experienceList,
+    }));
   }, [experienceList, setResumeInfo]);
 
-  // Handle text/date inputs
+  // Handle text and date inputs
   const handleChange = (index, event) => {
     const { name, value } = event.target;
     setExperienceList((prev) =>
@@ -68,7 +58,8 @@ function Experience() {
       )
     );
   };
-  // Add new experience
+
+  // Add new experience entry
   const AddNewExperience = () => {
     setExperienceList((prev) => [
       ...prev,
@@ -85,26 +76,27 @@ function Experience() {
     ]);
   };
 
-  // Remove last experience if there's more than one
+  // Remove last experience entry
   const RemoveExperience = () => {
     if (experienceList.length > 1) {
       setExperienceList((prev) => prev.slice(0, -1));
     }
   };
 
-  // Save to DB
+  // Save experience to the database
   const onSave = async () => {
     if (!resumeId) {
       toast.error("❌ Error: Resume ID is missing.");
       return;
     }
+
     setLoading(true);
     try {
       await GlobalApi.UpdateExperienceDetails(resumeId, experienceList);
-      toast("✅ Experience details updated successfully!");
+      toast.success("✅ Experience details updated successfully!");
     } catch (error) {
       console.error("❌ Error updating experience details:", error);
-      toast("❌ Error updating experience details. Please try again.");
+      toast.error("❌ Error updating experience details. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -178,14 +170,16 @@ function Experience() {
             <div className="col-span-2">
               <label className="text-xs">Job Description</label>
               <RichTextEditor
-  index={index}
-  defaultValue={item.description}
-  onRichTextEditorChange={(val) => handleRichTextEditor(val, index)}
-/>;
+                index={index}
+                defaultValue={item.description}
+                onRichTextEditorChange={(val) => handleRichTextEditor(val, index)}
+              />
             </div>
           </div>
         ))}
       </div>
+
+      {/* Action Buttons */}
       <div className="flex justify-between">
         <div className="flex gap-2">
           <Button variant="outline" onClick={AddNewExperience}>
@@ -195,8 +189,15 @@ function Experience() {
             - Remove
           </Button>
         </div>
-        <Button disabled={loading} onClick={onSave}>
-          {loading ? <LoaderCircle className="animate-spin" /> : "Save"}
+
+        {/* ✅ Fix: Ensure `onClick` triggers `onSave` */}
+        <Button 
+          type="button"  // ✅ Fix: Ensure this is a button, not a submit
+          onClick={onSave} 
+          disabled={loading} 
+          className="bg-[#4c46bb] text-white hover:bg-[#3b3699] disabled:bg-gray-400"
+        >
+          {loading ? <LoaderCircle className="animate-spin" /> : 'Save'}
         </Button>
       </div>
     </div>

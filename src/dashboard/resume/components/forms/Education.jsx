@@ -9,7 +9,7 @@ import GlobalApi from './../../../../../service/GlobalApi';
 import { toast } from 'sonner';
 
 function Education({ resumeId: propresumeId }) {
-  // ✅ Get `resumeId` from URL params or fallback to prop
+  // ✅ Ensure resumeId is always available
   const { resumeId: paramresumeId } = useParams();
   const resumeId = propresumeId || paramresumeId || localStorage.getItem("resumeId");
 
@@ -33,22 +33,33 @@ function Education({ resumeId: propresumeId }) {
     },
   ]);
 
+  // ✅ Load education details from context if available
   useEffect(() => {
-    if (resumeInfo?.education) {
+    if (resumeInfo?.education?.length > 0) {
       setEducationalList(resumeInfo.education);
     }
   }, [resumeInfo]);
 
+  // ✅ Sync with context whenever educationalList changes
+  useEffect(() => {
+    setResumeInfo((prev) => ({
+      ...prev,
+      education: educationalList,
+    }));
+  }, [educationalList, setResumeInfo]);
+
+  // ✅ Handle Input Changes
   const handleChange = (event, index) => {
-    const newEntries = [...educationalList];
     const { name, value } = event.target;
-    newEntries[index][name] = value;
-    setEducationalList(newEntries);
+    setEducationalList((prev) =>
+      prev.map((edu, i) => (i === index ? { ...edu, [name]: value } : edu))
+    );
   };
 
+  // ✅ Add New Education Entry
   const AddNewEducation = () => {
-    setEducationalList([
-      ...educationalList,
+    setEducationalList((prev) => [
+      ...prev,
       {
         university_name: '',
         degree: '',
@@ -60,23 +71,25 @@ function Education({ resumeId: propresumeId }) {
     ]);
   };
 
+  // ✅ Remove Last Education Entry
   const RemoveEducation = () => {
     if (educationalList.length > 1) {
-      setEducationalList(educationalList.slice(0, -1));
+      setEducationalList((prev) => prev.slice(0, -1));
     }
   };
 
+  // ✅ Save Education Details to Database
   const onSave = async () => {
     if (!resumeId) {
       toast.error("❌ Error: Resume ID is missing.");
       return;
     }
-  
+
     setLoading(true);
     try {
-      // Ensure education details are correctly formatted
+      // Ensure data is correctly formatted
       const educationData = educationalList.map((edu) => ({
-        resumeId, // Ensure resumeId is assigned
+        resumeId,
         university_name: edu.university_name,
         degree: edu.degree,
         major: edu.major,
@@ -84,99 +97,99 @@ function Education({ resumeId: propresumeId }) {
         end_date: edu.end_date,
         description: edu.description,
       }));
-  
-      // ✅ Call the function correctly
+
+      // ✅ Call API to save data
       await GlobalApi.UpdateEducationDetails(resumeId, educationData);
-      toast('✅ Education details updated successfully!');
+      toast.success('✅ Education details updated successfully!');
     } catch (error) {
       console.error('❌ Error updating education details:', error);
-      toast('❌ Error updating education details. Please try again.');
+      toast.error('❌ Error updating education details. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
-
-  useEffect(() => {
-    setResumeInfo((prev) => ({
-      ...prev,
-      education: educationalList,
-    }));
-  }, [educationalList]);
 
   return (
-    <div className='p-5 shadow-lg rounded-lg border-t-primary border-t-4 mt-10'>
-      <h2 className='font-bold text-lg'>Education</h2>
-      <p>Add Your educational details</p>
+    <div className="p-5 shadow-lg rounded-lg border-t-primary border-t-4 mt-10">
+      <h2 className="font-bold text-lg">Education</h2>
+      <p>Add Your Educational Details</p>
 
       <div>
         {educationalList.map((item, index) => (
-          <div key={index} className='grid grid-cols-2 gap-3 border p-3 my-5 rounded-lg'>
-            <div className='col-span-2'>
+          <div key={index} className="grid grid-cols-2 gap-3 border p-3 my-5 rounded-lg">
+            <div className="col-span-2">
               <label>University Name</label>
               <Input
-                name='university_name'
-                onChange={(e) => handleChange(e, index)}
+                name="university_name"
                 value={item.university_name}
+                onChange={(e) => handleChange(e, index)}
               />
             </div>
             <div>
               <label>Degree</label>
               <Input
-                name='degree'
-                onChange={(e) => handleChange(e, index)}
+                name="degree"
                 value={item.degree}
+                onChange={(e) => handleChange(e, index)}
               />
             </div>
             <div>
               <label>Major</label>
               <Input
-                name='major'
-                onChange={(e) => handleChange(e, index)}
+                name="major"
                 value={item.major}
+                onChange={(e) => handleChange(e, index)}
               />
             </div>
             <div>
               <label>Start Date</label>
               <Input
-                type='date'
-                name='start_date'
-                onChange={(e) => handleChange(e, index)}
+                type="date"
+                name="start_date"
                 value={item.start_date}
+                onChange={(e) => handleChange(e, index)}
               />
             </div>
             <div>
               <label>End Date</label>
               <Input
-                type='date'
-                name='end_date'
-                onChange={(e) => handleChange(e, index)}
+                type="date"
+                name="end_date"
                 value={item.end_date}
+                onChange={(e) => handleChange(e, index)}
               />
             </div>
-            <div className='col-span-2'>
+            <div className="col-span-2">
               <label>Description</label>
               <Textarea
-                name='description'
-                onChange={(e) => handleChange(e, index)}
+                name="description"
                 value={item.description}
+                onChange={(e) => handleChange(e, index)}
               />
             </div>
           </div>
         ))}
       </div>
 
-      <div className='flex justify-between'>
-        <div className='flex gap-2'>
-          <Button variant='outline' onClick={AddNewEducation} className='text-primary'>
+      {/* Action Buttons */}
+      <div className="flex justify-between">
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={AddNewEducation} className="text-primary">
             + Add More Education
           </Button>
-          <Button variant='outline' onClick={RemoveEducation} className='text-primary'>
+          <Button variant="outline" onClick={RemoveEducation} className="text-primary">
             - Remove
           </Button>
         </div>
-        <Button disabled={loading} onClick={onSave}>
-          {loading ? <LoaderCircle className='animate-spin' /> : 'Save'}
+
+        {/* ✅ Fix: Save Button Now Works */}
+        <Button
+          type="button"  // ✅ Ensure it's a button (not submit)
+          onClick={onSave}
+          disabled={loading}
+          className="bg-[#4c46bb] text-white hover:bg-[#3b3699] disabled:bg-gray-400"
+        >
+          {loading ? <LoaderCircle className="animate-spin" /> : 'Save'}
         </Button>
       </div>
     </div>

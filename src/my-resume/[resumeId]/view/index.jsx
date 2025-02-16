@@ -64,6 +64,7 @@ function ViewResume() {
     }
   };
 
+  // ✅ Force Background Graphics in PDF
   const handleDownload = () => {
     window.print();
   };
@@ -73,7 +74,7 @@ function ViewResume() {
       <div id="no-print">
         <Header />
         <div className="my-10 mx-10 md:mx-20 lg:mx-36">
-        <h4 className="text-center text-2xl font-medium">شكرا لك لإستخدامك منصة رفاد </h4>
+          <h4 className="text-center text-2xl font-medium">شكرا لك لإستخدامك منصة رفاد </h4>
 
           <h2 className="text-center text-2xl font-medium">🎉 Congrats! Your CV's Ready!</h2>
           <p className="text-center text-gray-400">

@@ -10,17 +10,34 @@ import GlobalApi from './../../../../../service/GlobalApi';
 import { toast } from 'sonner';
 
 function Skills() {
-  const { resumeId } = useParams(); // ✅ Ensure correct param name
+  const { resumeId: paramresumeId } = useParams();
+  const resumeId = paramresumeId || localStorage.getItem("resumeId");
+
+  if (!resumeId) {
+    console.error("❌ Resume ID is missing.");
+    return <p className="text-red-500">❌ Error: Resume ID is missing.</p>;
+  }
+
+  console.log("🔍 Resume ID Found:", resumeId);
+
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
   const [skillsList, setSkillsList] = useState([{ name: '', rating: 0 }]);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Fetch Skills Data on Component Mount
+  // ✅ Load skills data if available in context
   useEffect(() => {
-    if (resumeInfo?.skills) {
+    if (resumeInfo?.skills?.length > 0) {
       setSkillsList(resumeInfo.skills);
     }
   }, [resumeInfo]);
+
+  // ✅ Sync context when skills list changes
+  useEffect(() => {
+    setResumeInfo((prev) => ({
+      ...prev,
+      skills: skillsList,
+    }));
+  }, [skillsList, setResumeInfo]);
 
   // ✅ Handle Input Change
   const handleChange = (index, field, value) => {
@@ -41,7 +58,7 @@ function Skills() {
     }
   };
 
-  // ✅ Save Skills Data to Supabase
+  // ✅ Save Skills Data to Database
   const onSave = async () => {
     if (!resumeId) {
       toast.error("❌ Error: Resume ID is missing.");
@@ -51,26 +68,25 @@ function Skills() {
     setLoading(true);
     try {
       await GlobalApi.UpdateSkillsDetails(resumeId, skillsList);
-      setResumeInfo((prev) => ({ ...prev, skills: skillsList }));
-      toast('✅ Skills updated successfully!');
+      toast.success('✅ Skills updated successfully!');
     } catch (error) {
       console.error('❌ Error updating skills:', error);
-      toast('❌ Failed to update skills. Please try again.');
+      toast.error('❌ Failed to update skills. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className='p-5 shadow-lg rounded-lg border-t-primary border-t-4 mt-10'>
-      <h2 className='font-bold text-lg'>Skills</h2>
+    <div className="p-5 shadow-lg rounded-lg border-t-primary border-t-4 mt-10">
+      <h2 className="font-bold text-lg">Skills</h2>
       <p>Add Your Top Professional Skills</p>
 
       <div>
         {skillsList.map((item, index) => (
-          <div key={index} className='flex justify-between mb-2 border rounded-lg p-3'>
-            <div>
-              <label className='text-xs'>Skill Name</label>
+          <div key={index} className="flex justify-between mb-2 border rounded-lg p-3">
+            <div className="flex-1 mr-3">
+              <label className="text-xs">Skill Name</label>
               <Input
                 className="w-full"
                 value={item.name}
@@ -86,8 +102,9 @@ function Skills() {
         ))}
       </div>
 
-      <div className='flex justify-between'>
-        <div className='flex gap-2'>
+      {/* Action Buttons */}
+      <div className="flex justify-between">
+        <div className="flex gap-2">
           <Button variant="outline" onClick={AddNewSkill} className="text-primary">
             + Add More Skill
           </Button>
@@ -95,8 +112,15 @@ function Skills() {
             - Remove
           </Button>
         </div>
-        <Button disabled={loading} onClick={onSave}>
-          {loading ? <LoaderCircle className='animate-spin' /> : 'Save'}
+
+        {/* ✅ Fix: Save Button Now Works */}
+        <Button
+          type="button"  // ✅ Ensure it's a button (not submit)
+          onClick={onSave}
+          disabled={loading}
+          className="bg-[#4c46bb] text-white hover:bg-[#3b3699] disabled:bg-gray-400"
+        >
+          {loading ? <LoaderCircle className="animate-spin" /> : 'Save'}
         </Button>
       </div>
     </div>

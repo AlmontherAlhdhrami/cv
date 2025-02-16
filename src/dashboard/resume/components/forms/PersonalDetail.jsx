@@ -148,9 +148,14 @@ function PersonalDetail({ enabledNext }) {
                     </div>
                 </div>
                 <div className="mt-3 flex justify-end">
-                    <Button type="submit" disabled={loading}>
-                        {loading ? <LoaderCircle className="animate-spin" /> : "Save"}
-                    </Button>
+                <Button 
+  type="submit" 
+  disabled={loading} 
+  className={`bg-[#4c46bb] text-white hover:bg-[#3b3699] disabled:bg-gray-400 disabled:cursor-not-allowed`}
+>
+  {loading ? <LoaderCircle className="animate-spin" /> : 'Save'}
+</Button>
+
                 </div>
             </form>
         </div>

@@ -10,80 +10,78 @@ import { AIChatSession } from './../../../../../service/AIModal';
 
 // ✅ AI Prompt Template
 const promptTemplate = 
-  "Job Title: {job_title} . Based on the job title, provide a list of 3 experience levels: Senior, Mid-Level, and Fresher, with a 3-4 line summary for each in an array format, including summary and experience_level fields in JSON format.";
+  "Job Title: {job_title}. Based on the job title, provide a professional summary of 3-4 sentences. Return only plain text.";
 
 function Summery({ enabledNext }) {
   const { resumeId } = useParams();
-  const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
-  const [summary, setSummary] = useState("");
+  const { setResumeInfo } = useContext(ResumeInfoContext);
+  
+  const [summary, setSummary] = useState('');
+  const [jobTitle, setJobTitle] = useState(''); // ✅ Store job title from database
   const [loading, setLoading] = useState(false);
   const [aiGeneratedSummaryList, setAiGeneratedSummaryList] = useState([]);
 
   useEffect(() => {
     if (resumeId) {
+      fetchJobTitle();
       fetchSummary();
     }
   }, [resumeId]);
+
+  // ✅ Fetch Job Title Directly from Database
+  const fetchJobTitle = async () => {
+    try {
+      const personalDetails = await GlobalApi.GetPersonalDetails(resumeId);
+      if (personalDetails?.job_title) {
+        setJobTitle(personalDetails.job_title.trim());
+        console.log("✅ Fetched Job Title:", personalDetails.job_title);
+      } else {
+        console.log("⚠ No Job Title found.");
+      }
+    } catch (error) {
+      console.error("❌ Error fetching job title:", error);
+    }
+  };
 
   // ✅ Fetch Summary from Database
   const fetchSummary = async () => {
     try {
       const data = await GlobalApi.GetSummaryByResumeId(resumeId);
-      if (data) {
-        setSummary(data);
+      if (data?.summary) {
+        setSummary(data.summary);
+        console.log("✅ Fetched Summary:", data.summary);
+      } else {
+        console.log("⚠ No Summary found.");
       }
     } catch (error) {
       console.error("❌ Error fetching summary:", error);
     }
   };
 
+  // ✅ AI Generation (Uses Job Title from Database)
   const GenerateSummaryFromAI = async () => {
-    if (!resumeInfo?.job_title) {
-      toast('❌ Please add a job title before generating the summary.');
+    if (!jobTitle) {
+      toast.error("❌ Please add a job title before generating the summary.");
       return;
     }
-  
+
     setLoading(true);
-  
-    const prompt = promptTemplate.replace('{job_title}', resumeInfo.job_title);
-  
+    const prompt = promptTemplate.replace('{job_title}', jobTitle);
+
     try {
       const result = await AIChatSession.sendMessage(prompt);
       let responseText = await result.response.text();
-  
-      console.log("🟢 Raw AI Response:", responseText); // Debugging AI response
-  
-      // ✅ Remove markdown formatting (` ```json ` and ` ``` `)
-      responseText = responseText.replace(/```json|```/g, "").trim();
-  
-      let responseData;
-  
-      // ✅ Ensure response is valid JSON
-      try {
-        responseData = JSON.parse(responseText);
-      } catch (jsonError) {
-        console.error("❌ Error parsing AI response:", jsonError);
-        toast("❌ AI response is not valid JSON.");
-        return;
-      }
-  
-      // ✅ Ensure response is in correct array format
-      if (!Array.isArray(responseData)) {
-        console.error("❌ AI response is not an array:", responseData);
-        toast("❌ AI response format error.");
-        return;
-      }
-  
-      setAiGeneratedSummaryList(responseData);
+      console.log("🟢 AI Response:", responseText);
+
+      setSummary(responseText.trim());
     } catch (error) {
       console.error("❌ AI Generation Error:", error);
-      toast('❌ Failed to generate summary from AI.');
+      toast.error("❌ Failed to generate summary from AI.");
     } finally {
       setLoading(false);
     }
   };
-  
-  
+
   // ✅ Save Summary to Database
   const onSave = async (e) => {
     e.preventDefault();
@@ -93,10 +91,10 @@ function Summery({ enabledNext }) {
       await GlobalApi.SaveSummary(resumeId, summary);
       setResumeInfo((prev) => ({ ...prev, summary }));
       enabledNext(true);
-      toast("✅ Summary updated successfully!");
+      toast.success("✅ Summary updated successfully!");
     } catch (error) {
       console.error('❌ Error updating summary:', error);
-      toast("❌ Failed to update summary.");
+      toast.error("❌ Failed to update summary.");
     } finally {
       setLoading(false);
     }
@@ -110,7 +108,7 @@ function Summery({ enabledNext }) {
 
         <form className='mt-7' onSubmit={onSave}>
           <div className='flex justify-between items-end'>
-            <label>Add Summary</label>
+            <label>Job Title: {jobTitle || "N/A"}</label> {/* ✅ Displays Job Title */}
             <Button
               variant="outline"
               onClick={GenerateSummaryFromAI}
@@ -135,28 +133,16 @@ function Summery({ enabledNext }) {
             onChange={(e) => setSummary(e.target.value)}
           />
           <div className='mt-2 flex justify-end'>
-            <Button type="submit" disabled={loading}>
-              {loading ? <LoaderCircle className='animate-spin' /> : 'Save'}
+            <Button 
+              type="submit" 
+              disabled={loading} 
+              className={`bg-[#4c46bb] text-white hover:bg-[#3b3699] disabled:bg-gray-400 disabled:cursor-not-allowed`}
+            >
+              {loading ? <LoaderCircle className="animate-spin" /> : 'Save'}
             </Button>
           </div>
         </form>
       </div>
-
-      {aiGeneratedSummaryList.length > 0 && (
-        <div className='my-5'>
-          <h2 className='font-bold text-lg'>Suggestions</h2>
-          {aiGeneratedSummaryList.map((item, index) => (
-            <div
-              key={index}
-              onClick={() => setSummary(item?.summary)}
-              className='p-5 shadow-lg my-4 rounded-lg cursor-pointer'
-            >
-              <h2 className='font-bold my-1 text-primary'>Level: {item?.experience_level}</h2>
-              <p>{item?.summary}</p>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
