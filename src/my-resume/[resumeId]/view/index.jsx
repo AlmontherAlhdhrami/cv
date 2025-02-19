@@ -6,6 +6,8 @@ import { ResumeInfoContext } from "@/context/ResumeInfoContext";
 import { Button } from "@/components/ui/button";
 import { RWebShare } from "react-web-share";
 import Header from "@/components/custom/Header";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 function ViewResume() {
   const { resumeId } = useParams();
@@ -64,9 +66,24 @@ function ViewResume() {
     }
   };
 
-  // ✅ Force Background Graphics in PDF
-  const handleDownload = () => {
-    window.print();
+  // ✅ تحميل ملف PDF مع تفعيل الخلفيات تلقائيًا عند الضغط على زر "Download"
+  const handleDownload = async () => {
+    const element = document.getElementById("print-area");
+
+    // 🎯 أخذ لقطة شاشة للـ CV مع الحفاظ على جودة الطباعة
+    const canvas = await html2canvas(element, {
+      scale: 2,        // تحسين الجودة
+      useCORS: true,   // حل مشكلة الصور الخارجية
+      backgroundColor: null, // الحفاظ على خلفية شفافة
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const imgWidth = 210; // عرض PDF بالـ mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width; // الحفاظ على الأبعاد
+
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+    pdf.save("Resume.pdf"); // 🛑 حفظ ملف PDF تلقائيًا عند الضغط على زر التحميل
   };
 
   return (
@@ -74,7 +91,7 @@ function ViewResume() {
       <div id="no-print">
         <Header />
         <div className="my-10 mx-10 md:mx-20 lg:mx-36">
-          <h4 className="text-center text-2xl font-medium">شكرا لك لإستخدامك منصة رفاد </h4>
+          <h4 className="text-center text-2xl font-medium">شكرا لك لإستخدامك منصة رفاد</h4>
 
           <h2 className="text-center text-2xl font-medium">🎉 Congrats! Your CV's Ready!</h2>
           <p className="text-center text-gray-400">
@@ -83,7 +100,22 @@ function ViewResume() {
 
           <div className="flex justify-center gap-5 my-10">
             <Button onClick={handleDownload}>Download</Button>
-            {resumeId && (
+
+            {resumeId && navigator.share ? (
+              <Button
+                onClick={() => {
+                  navigator.share({
+                    title: "📄 Check out my resume!",
+                    text: "View my resume online.",
+                    url: `${import.meta.env.VITE_BASE_URL}/my-resume/${resumeId}/view`,
+                  })
+                    .then(() => console.log("✅ Resume shared successfully!"))
+                    .catch((error) => console.error("❌ Error sharing:", error));
+                }}
+              >
+                Share
+              </Button>
+            ) : (
               <RWebShare
                 data={{
                   text: "📄 Check out my resume!",
