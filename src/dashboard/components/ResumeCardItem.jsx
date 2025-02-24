@@ -1,12 +1,6 @@
-import { Loader2Icon, MoreVertical } from "lucide-react";
+import { Contact2Icon, Loader2Icon, MoreVertical, Edit3, Eye, Trash2 } from "lucide-react";
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,11 +27,11 @@ function ResumeCardItem({ resume, refreshData }) {
 
     try {
       await GlobalApi.DeleteResumeById(resume.resumeid);
-      toast("✅ Resume Deleted!");
-      refreshData();
+      toast("✅ تم حذف السيرة الذاتية بنجاح!");
+      refreshData(); // ✅ تحديث البيانات دون الانتقال لأي صفحة
     } catch (error) {
-      console.error("❌ Error deleting resume:", error);
-      toast("❌ Error deleting resume");
+      console.error("❌ حدث خطأ أثناء الحذف:", error);
+      toast("❌ حدث خطأ أثناء الحذف");
     } finally {
       setLoading(false);
       setOpenAlert(false);
@@ -45,59 +39,62 @@ function ResumeCardItem({ resume, refreshData }) {
   };
 
   return (
-    <div>
-      <Link to={`/dashboard/resume/${resume.resumeid}/edit`}>
-        <div
-          className="p-14 bg-gradient-to-b from-[#50bbe9] via-[#50bbe9] to-[#50bbe9] h-[280px] rounded-t-lg border-t-4"
-          style={{ borderColor: resume?.themeColor || "#ccc" }}
-        >
-          <div className="flex items-center justify-center h-[180px]">
-            <h1>سيرتك الذاتية  </h1>
-
-          </div>
-        </div>
-      </Link>
-
-      <div
-        className="border p-3 flex justify-between text-white rounded-b-lg shadow-lg"
-        style={{ background: resume?.themeColor || "#ccc" }}
-      >
-        <h2 className="text-sm">{resume?.title || "Untitled Resume"}</h2>
-
-        {/* ✅ Dropdown Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <MoreVertical className="h-4 w-4 cursor-pointer" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => navigation(`/dashboard/resume/${resume.resumeid}/edit`)}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigation(`/my-resume/${resume.resumeid}/view`)}>
-              View
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setOpenAlert(true)}>Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* ✅ Delete Confirmation Dialog */}
-        <AlertDialog open={openAlert}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. It will permanently delete this resume.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setOpenAlert(false)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={onDelete} disabled={loading}>
-                {loading ? <Loader2Icon className="animate-spin" /> : "Delete"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+    <div className="bg-gradient-to-b from-[#50bbe9] to-[#002b65] rounded-2xl shadow-lg w-[250px] h-[300px] p-5 flex flex-col items-center justify-between">
+      {/* ✅ الأيقونة داخل دائرة شفافة */}
+      <div className="bg-white bg-opacity-20 rounded-full p-4 mt-2">
+        <Contact2Icon className="text-white" size={40} />
       </div>
+
+      {/* ✅ محتوى الكارد */}
+      <div className="text-center text-white mt-4">
+        <h2 className="text-lg font-bold mb-2">{resume?.title || "سيرة ذاتية بدون عنوان"}</h2>
+        
+      </div>
+
+      {/* ✅ أزرار تعديل - عرض - حذف */}
+      <div className="flex justify-between w-full gap-2 mt-3">
+        {/* زر التعديل */}
+        <button
+          onClick={() => navigation(`/dashboard/resume/${resume.resumeid}/edit`)}
+          className="flex-1 bg-[#50bbe9] hover:bg-[#84d2f4] text-white font-medium rounded-lg py-1 transition duration-300 flex items-center justify-center gap-1"
+        >
+          <Edit3 size={14} /> تعديل
+        </button>
+
+        {/* زر العرض */}
+        <button
+          onClick={() => navigation(`/my-resume/${resume.resumeid}/view`)}
+          className="flex-1 bg-[#50bbe9] hover:bg-[#84d2f4] text-white font-medium rounded-lg py-1 transition duration-300 flex items-center justify-center gap-1"
+        >
+          <Eye size={14} /> عرض
+        </button>
+
+        {/* زر الحذف */}
+        <button
+          onClick={() => setOpenAlert(true)}
+          className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg py-1 transition duration-300 flex items-center justify-center gap-1"
+        >
+          <Trash2 size={14} /> حذف
+        </button>
+      </div>
+
+      {/* ✅ نافذة تأكيد الحذف */}
+      <AlertDialog open={openAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              لا يمكن التراجع عن هذا الإجراء. سيتم حذف السيرة الذاتية نهائيًا.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setOpenAlert(false)}>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={onDelete} disabled={loading}>
+              {loading ? <Loader2Icon className="animate-spin" /> : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

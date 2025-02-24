@@ -51,7 +51,7 @@ function AddResume({ refreshData }) {  // ✅ Ensure refreshData() updates the r
 
     return (
         <div>
-            <div className='p-14 py-24 border items-center flex justify-center bg-secondary rounded-lg h-[280px] hover:scale-105 transition-all hover:shadow-md cursor-pointer border-dashed'
+            <div className='p-14 py-24 border items-center flex justify-center bg-[#50bbe9] rounded-lg h-[280px] hover:scale-105 transition-all hover:shadow-md cursor-pointer border-dashed'
                 onClick={() => setOpenDialog(true)}>
                 <PlusSquare />
             </div>
