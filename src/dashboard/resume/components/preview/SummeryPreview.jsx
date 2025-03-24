@@ -2,7 +2,7 @@ import React from 'react';
 
 function SummeryPreview({ resumeInfo }) {
   return (
-    <p className='text-xs'>
+    <p className='text-lg'>
       {/* ✅ إضافة قيمة افتراضية إذا لم يكن هناك ملخص */}
       {resumeInfo?.summary?.trim() 
         ? <span dangerouslySetInnerHTML={{ __html: resumeInfo.summary }} /> 

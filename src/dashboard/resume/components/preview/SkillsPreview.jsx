@@ -4,7 +4,7 @@ function SkillsPreview({ resumeInfo }) {
   return (
     <div className='my-6'>
       {/* ✅ تعديل العنوان إلى "Skills" بدلًا من "Education" */}
-      <h2 className='text-center font-bold text-sm mb-2'
+      <h2 className='text-center font-bold text-lg mb-2'
         style={{
           color: resumeInfo?.themecolor
         }}
@@ -18,7 +18,7 @@ function SkillsPreview({ resumeInfo }) {
           resumeInfo?.skills.map((skill, index) => (
             <div key={index} className='flex items-center justify-between'>
               {/* ✅ إضافة قيمة افتراضية في حالة عدم توفر اسم المهارة */}
-              <h2 className='text-xs'>{skill?.name ?? "N/A"}</h2>
+              <h2 className='text-lg'>{skill?.name ?? "N/A"}</h2>
               <div className='h-2 bg-gray-200 w-[120px]'>
                 <div className='h-2'
                   style={{

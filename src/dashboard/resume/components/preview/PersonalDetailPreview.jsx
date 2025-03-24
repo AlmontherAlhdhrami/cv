@@ -13,21 +13,21 @@ function PersonalDetailPreview({ resumeInfo }) {
       </h2>
 
       {/* ✅ Job Title */}
-      <h2 className='text-center text-sm font-medium'>
+      <h2 className='text-center text-lg font-medium'>
         {personalDetails?.job_title || "N/A"}
       </h2>
 
       {/* ✅ Address */}
-      <h2 className='text-center font-normal text-xs' style={{ color: themecolor }}>
+      <h2 className='text-center font-normal text-lg' style={{ color: themecolor }}>
         {personalDetails?.address || "N/A"}
       </h2>
 
       {/* ✅ Contact Details (Phone & Email) */}
       <div className='flex justify-between mt-1'>
-        <h2 className='font-normal text-xs' style={{ color: themecolor }}>
+        <h2 className='font-normal text-lg' style={{ color: themecolor }}>
           📞 {personalDetails?.phone || "N/A"}
         </h2>
-        <h2 className='font-normal text-xs' style={{ color: themecolor }}>
+        <h2 className='font-normal text-lg' style={{ color: themecolor }}>
           📧 {personalDetails?.email || "N/A"}
         </h2>
       </div>
